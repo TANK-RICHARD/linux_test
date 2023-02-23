@@ -1,3 +1,11 @@
+// NOTE: FIFO can be opened with 2 modes: block or nonblock.
+// 	 open() will return and code continue run when read fifo,
+//	 however, open() will return error when write fifo.
+//	 open() FIFO with block mode, and wait a little time,
+//	 for example 1us after writing FIFO, then write and read
+//	 process will be synchronized at the position of open(),
+//	 so that the data in fifo will be write and read correctly.
+
 // C program to implement one side of FIFO
 // This side reads first, then reads
 #include <stdio.h>
@@ -16,7 +24,9 @@ struct mt {
     pthread_mutexattr_t mutexattr;
 };
 
-int main()
+#define MUTEX 0
+
+int main(void)
 {
     int fd1, ret;
 
@@ -40,41 +50,49 @@ int main()
     char str1[80], str2[80];
     int cnt = 0;
 
+
     //sleep(30);
-    for (int i = 0; i < 1; i ++) {
-	printf("begin t: %d\n", i);
+    for (int i = 0; i < 10; i ++) {
+	//printf("begin t: %d\n", i);
+
+#if MUTEX
 	if ((ret = pthread_mutex_lock(&mm->mutex)) != 0) {
 	    printf("s lock failed\n");
 	    exit(-1);
 	}
 	printf("%d mutex lock finished\n", __LINE__);
-	sleep(2);
+	//sleep(2);
+#endif
 
-        // First open in read only and read
-        if ((fd1 = open(myfifo, O_RDONLY)) < 0) {
-		printf("s open fifo failed\n");
+	// First open in read only and read
+	if ((fd1 = open(myfifo, O_RDONLY)) < 0) {
+	    printf("s open fifo failed\n");
 	}
-
 	printf("%d open fifo finished\n", __LINE__);
-	sleep(2);
+
+	//sleep(2);
         if ((ret = read(fd1, str1, 80)) < 0) {
 	    printf("s read failed\n");
 	}
 
-	printf("%d read fifo finished\n", __LINE__);
-	sleep(2);
+	//printf("%d read fifo finished\n", __LINE__);
+	//sleep(2);
         // Print the read string and close
         printf("User1: %s\n", str1);
-        if ((ret = close(fd1)) < 0) {
-	    printf("s close fifo failed\n");
-	}
-	printf("%d close fifo finished\n", __LINE__);
-	sleep(2);
+	//sleep(2);
 
+        if ((ret = close(fd1)) < 0) {
+            printf("s close fifo failed\n");
+        }
+        //printf("%d close fifo finished\n", __LINE__);
+	usleep(2);
+
+#if MUTEX
 	if ((ret = pthread_mutex_unlock(&mm->mutex)) != 0) {
 	    printf("s unlock failed\n");
 	    exit(-2);
 	}
+#endif
 
 #if 0
         // Now open in write mode and write
@@ -87,8 +105,9 @@ int main()
         close(fd1);
 #endif
 	printf("end t: %d\n", i);
-	usleep(10);
+	//usleep(10);
     }
+
     return 0;
 }
 

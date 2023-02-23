@@ -16,7 +16,7 @@ struct mt {
     pthread_mutexattr_t mutexattr;
 };
 
-int main()
+int main(void)
 {
     int fd;
     int ret;
@@ -25,8 +25,8 @@ int main()
     char *myfifo = "./myfifo";
 
     // Creating the named file(FIFO)
-    // mkfifo(<pathname>, <permission>)
-    //mkfifo(myfifo, 0666);
+    //mkfifo(<pathname>, <permission>)
+    mkfifo(myfifo, 0666);
 
     // create shared mutex interprocess
     struct mt *mm;
@@ -40,36 +40,37 @@ int main()
 
     char arr1[80], arr2[80];
     int cnt = 0;
-    sprintf(arr2, "client %d", cnt);
     
-    sleep(30);
-    for (int i = 0; i < 1; i ++)
+    //sleep(30);
+    for (int i = 0; i < 10; i ++)
     {
-#if 1
+#if 0
 	printf("----- begin client -----\n");
 	if ((ret = pthread_mutex_lock(&mm->mutex)) != 0) {
 	    //printf("lock failed\n");
 	    exit(-1);
 	}
 	printf("%d mutex lock finished\n", __LINE__);
-	sleep(5);
+#endif
+	//sleep(5);
 
-        // Open FIFO for write only
-        if ((fd = open(myfifo, O_WRONLY)) < 0) {
+	//sleep(5);
+
+	// Open FIFO for write only
+	if ((fd = open(myfifo, O_WRONLY)) < 0) {
 	    printf("open fifo file failed\n");
 	    exit(-2);
-        }
-	printf("%d open fifo finished\n", __LINE__);
-	sleep(5);
+	}
+	//printf("%d open fifo finished\n", __LINE__);
 
         // Take an input arr2ing from user.
         // 80 is maximum length
-	printf("cnt: %d\n", cnt++);
         //fgets(arr2, 80, stdin);
 	sprintf(arr2, "client %d", cnt);
+	printf("cnt: %d\n", cnt++);
 
-	printf("%d sprintf finished\n", __LINE__);
-	sleep(5);
+	//printf("%d sprintf finished\n", __LINE__);
+	//sleep(5);
 	
         // Write the input arr2ing on FIFO
         // and close it
@@ -77,24 +78,25 @@ int main()
 	    //printf("write fifo failed\n");
 	    exit(-3);
 	}
-	printf("%d write fifo finished\n", __LINE__);
-	sleep(5);
+	//printf("%d write fifo finished\n", __LINE__);
+	//sleep(5);
 
-        if ((ret = close(fd)) != 0) {
-	    //printf("close fd failed\n");
+	if ((ret = close(fd)) != 0) {
+	    printf("close fd failed\n");
 	    exit(-4);
 	}
-	printf("%d close fifo finished\n", __LINE__);
-	sleep(5);
-	//sleep(7);
+	//printf("%d close fifo finished\n", __LINE__);
 
+	//sleep(5);
+	//sleep(7);
+#if 0
 	if ((ret = pthread_mutex_unlock(&mm->mutex)) != 0) {
 	    //printf("unlock failed\n");
 	    exit(-5);
 	}
 	printf("----- end client -----\n");
-	usleep(10);
 #endif
+	usleep(1);
 	//printf("client end\n");
 
 #if 0

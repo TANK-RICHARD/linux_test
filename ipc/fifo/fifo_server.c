@@ -51,61 +51,41 @@ int main(void)
     int cnt = 0;
 
 
-    //sleep(30);
-    for (int i = 0; i < 10; i ++) {
-	//printf("begin t: %d\n", i);
-
+    for (int i = 0; i < 1000; i ++) {
 #if MUTEX
-	if ((ret = pthread_mutex_lock(&mm->mutex)) != 0) {
-	    printf("s lock failed\n");
-	    exit(-1);
-	}
-	printf("%d mutex lock finished\n", __LINE__);
-	//sleep(2);
+        if ((ret = pthread_mutex_lock(&mm->mutex)) != 0) {
+            printf("s lock failed\n");
+            exit(-1);
+        }
+        printf("%d mutex lock finished\n", __LINE__);
 #endif
 
-	// First open in read only and read
-	if ((fd1 = open(myfifo, O_RDONLY)) < 0) {
-	    printf("s open fifo failed\n");
-	}
-	printf("%d open fifo finished\n", __LINE__);
+        // First open in read only and read
+        if ((fd1 = open(myfifo, O_RDONLY)) < 0) {
+            printf("s open fifo failed\n");
+        }
 
-	//sleep(2);
         if ((ret = read(fd1, str1, 80)) < 0) {
-	    printf("s read failed\n");
-	}
+            printf("s read failed\n");
+        }
+        // TODO: spin lock here
 
-	//printf("%d read fifo finished\n", __LINE__);
-	//sleep(2);
         // Print the read string and close
         printf("User1: %s\n", str1);
-	//sleep(2);
 
         if ((ret = close(fd1)) < 0) {
             printf("s close fifo failed\n");
         }
-        //printf("%d close fifo finished\n", __LINE__);
-	usleep(2);
 
 #if MUTEX
-	if ((ret = pthread_mutex_unlock(&mm->mutex)) != 0) {
-	    printf("s unlock failed\n");
-	    exit(-2);
-	}
+        if ((ret = pthread_mutex_unlock(&mm->mutex)) != 0) {
+            printf("s unlock failed\n");
+            exit(-2);
+        }
 #endif
 
-#if 0
-        // Now open in write mode and write
-        // string taken from user.
-        fd1 = open(myfifo, O_WRONLY);
-        //fgets(str2, 80, stdin);
-	//strcpy(str2, "server");
-	sprintf(str2, "server %d", cnt++);
-        write(fd1, str2, strlen(str2)+1);
-        close(fd1);
-#endif
-	printf("end t: %d\n", i);
-	//usleep(10);
+        printf("end t: %d\n", i);
+        usleep(2);
     }
 
     return 0;
